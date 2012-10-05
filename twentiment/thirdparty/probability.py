@@ -36,16 +36,18 @@ implementation of the ``ConditionalProbDistI`` interface is
 ``ConditionalProbDist``, a derived distribution.
 
 """
-
-_NINF = float('-1e300')
-
+from __future__ import print_function
 
 import math
 import random
 import warnings
 from operator import itemgetter
-from itertools import imap, islice
+from itertools import islice
 from collections import defaultdict
+from functools import reduce
+import six
+
+_NINF = float('-1e300')
 
 ##//////////////////////////////////////////////////////
 ##  Frequency Distributions
@@ -190,7 +192,7 @@ class FreqDist(dict):
             defaults to ``self.B()`` (so Nr(0) will be 0).
         :rtype: int
         """
-        if r < 0: raise IndexError, 'FreqDist.Nr(): r must be non-negative'
+        if r < 0: raise IndexError('FreqDist.Nr(): r must be non-negative')
 
         # Special case for Nr(0):
         if r == 0:
@@ -247,7 +249,7 @@ class FreqDist(dict):
         :type sample: any
         :rtype: float
         """
-        if self._N is 0:
+        if self._N == 0:
             return 0
         return float(self[sample]) / self._N
 
@@ -339,11 +341,11 @@ class FreqDist(dict):
         # percents = [f * 100 for f in freqs]  only in ProbDist?
 
         for i in range(len(samples)):
-            print "%4s" % str(samples[i]),
-        print
+            print("%4s" % str(samples[i]), end=' ')
+        print()
         for i in range(len(samples)):
-            print "%4d" % freqs[i],
-        print
+            print("%4d" % freqs[i], end=' ')
+        print()
 
     def _sort_keys_by_value(self):
         if not self._item_cache:
@@ -356,6 +358,7 @@ class FreqDist(dict):
         :rtype: list(any)
         """
         self._sort_keys_by_value()
+        # this will return iterator under python 3
         return map(itemgetter(0), self._item_cache)
 
     def values(self):
@@ -365,6 +368,7 @@ class FreqDist(dict):
         :rtype: list(any)
         """
         self._sort_keys_by_value()
+        # this will return iterator under python 3
         return map(itemgetter(1), self._item_cache)
 
     def items(self):
@@ -426,9 +430,9 @@ class FreqDist(dict):
         :type samples: list
         """
         try:
-            sample_iter = samples.iteritems()
+            sample_iter = six.iteritems(samples)
         except:
-            sample_iter = imap(lambda x: (x,1), samples)
+            sample_iter = ((x, 1) for x in samples)
         for sample, count in sample_iter:
             self.inc(sample, count=count)
 
@@ -650,7 +654,7 @@ class DictionaryProbDist(ProbDistI):
         # Normalize the distribution, if requested.
         if normalize:
             if log:
-                value_sum = sum_logs(self._prob_dict.values())
+                value_sum = sum_logs(list(self._prob_dict.values()))
                 if value_sum <= _NINF:
                     logp = math.log(1.0/len(prob_dict), 2)
                     for x in prob_dict:
@@ -1514,7 +1518,7 @@ class SimpleGoodTuringProbDist(ProbDistI):
         prob_sum = 0.0
         for i in  range(0, len(self._Nr)):
             prob_sum += self._Nr[i] * self._prob_measure(i) / self._renormal
-        print "Probability Sum:", prob_sum
+        print("Probability Sum:", prob_sum)
         #assert prob_sum != 1.0, "probability sum should be one!"
 
     def discount(self):
@@ -1567,7 +1571,7 @@ class MutableProbDist(ProbDistI):
         try:
             import numpy
         except ImportError:
-            print "Error: Please install numpy; for instructions see http://www.nltk.org/"
+            print("Error: Please install numpy; for instructions see http://www.nltk.org/")
             exit()
         self._samples = samples
         self._sample_dict = dict((samples[i], i) for i in range(len(samples)))
@@ -1720,7 +1724,7 @@ class ConditionalFreqDist(defaultdict):
 
         :rtype: int
         """
-        return sum(fdist.N() for fdist in self.itervalues())
+        return sum(fdist.N() for fdist in six.itervalues(self))
 
     def plot(self, *args, **kwargs):
         """
@@ -1789,20 +1793,20 @@ class ConditionalFreqDist(defaultdict):
                              sorted(set(v for c in conditions for v in self[c])))  # this computation could be wasted
 
         condition_size = max(len(str(c)) for c in conditions)
-        print ' ' * condition_size,
+        print(' ' * condition_size, end=' ')
         for s in samples:
-            print "%4s" % str(s),
-        print
+            print("%4s" % str(s), end=' ')
+        print()
         for c in conditions:
-            print "%*s" % (condition_size, str(c)),
+            print("%*s" % (condition_size, str(c)), end=' ')
             if cumulative:
                 freqs = list(self[c]._cumulative_frequencies(samples))
             else:
                 freqs = [self[c][sample] for sample in samples]
 
             for f in freqs:
-                print "%4d" % f,
-            print
+                print("%4d" % f, end=' ')
+            print()
 
     def __le__(self, other):
         if not isinstance(other, ConditionalFreqDist): return False
@@ -1886,12 +1890,12 @@ class ConditionalProbDist(ConditionalProbDistI):
 
         >>> from nltk.probability import ConditionalProbDist, ELEProbDist
         >>> cpdist = ConditionalProbDist(cfdist, ELEProbDist, 10)
-        >>> print cpdist['run'].max()
+        >>> print(cpdist['run'].max())
         'NN'
-        >>> print cpdist['run'].prob('NN')
+        >>> print(cpdist['run'].prob('NN'))
         0.0813
     """
-    def __init__(self, cfdist, probdist_factory, 
+    def __init__(self, cfdist, probdist_factory,
                  *factory_args, **factory_kw_args):
         """
         Construct a new conditional probability distribution, based on
@@ -1921,11 +1925,11 @@ class ConditionalProbDist(ConditionalProbDistI):
         # self._factory_args = factory_args
         # self._factory_kw_args = factory_kw_args
 
-        factory = lambda: probdist_factory(FreqDist(), 
+        factory = lambda: probdist_factory(FreqDist(),
                                            *factory_args, **factory_kw_args)
         defaultdict.__init__(self, factory)
         for condition in cfdist:
-            self[condition] = probdist_factory(cfdist[condition], 
+            self[condition] = probdist_factory(cfdist[condition],
                                                *factory_args, **factory_kw_args)
 
 
@@ -2067,9 +2071,9 @@ class ProbabilisticMixIn(object):
 
 class ImmutableProbabilisticMixIn(ProbabilisticMixIn):
     def set_prob(self, prob):
-        raise ValueError, '%s is immutable' % self.__class__.__name__
+        raise ValueError('%s is immutable' % self.__class__.__name__)
     def set_logprob(self, prob):
-        raise ValueError, '%s is immutable' % self.__class__.__name__
+        raise ValueError('%s is immutable' % self.__class__.__name__)
 
 ## Helper function for processing keyword arguments
 
@@ -2156,37 +2160,36 @@ def demo(numsamples=6, numoutcomes=500):
                           [pdist.prob(n) for pdist in pdists]))
 
     # Print the results in a formatted table.
-    print ('%d samples (1-%d); %d outcomes were sampled for each FreqDist' %
-           (numsamples, numsamples, numoutcomes))
-    print '='*9*(len(pdists)+2)
+    print(('%d samples (1-%d); %d outcomes were sampled for each FreqDist' %
+           (numsamples, numsamples, numoutcomes)))
+    print('='*9*(len(pdists)+2))
     FORMATSTR = '      FreqDist '+ '%8s '*(len(pdists)-1) + '|  Actual'
-    print FORMATSTR % tuple(`pdist`[1:9] for pdist in pdists[:-1])
-    print '-'*9*(len(pdists)+2)
+    print(FORMATSTR % tuple(repr(pdist)[1:9] for pdist in pdists[:-1]))
+    print('-'*9*(len(pdists)+2))
     FORMATSTR = '%3d   %8.6f ' + '%8.6f '*(len(pdists)-1) + '| %8.6f'
     for val in vals:
-        print FORMATSTR % val
+        print(FORMATSTR % val)
 
     # Print the totals for each column (should all be 1.0)
-    zvals = zip(*vals)
-    def sum(lst): return reduce(lambda x,y:x+y, lst, 0)
+    zvals = list(zip(*vals))
     sums = [sum(val) for val in zvals[1:]]
-    print '-'*9*(len(pdists)+2)
+    print('-'*9*(len(pdists)+2))
     FORMATSTR = 'Total ' + '%8.6f '*(len(pdists)) + '| %8.6f'
-    print  FORMATSTR % tuple(sums)
-    print '='*9*(len(pdists)+2)
+    print(FORMATSTR % tuple(sums))
+    print('='*9*(len(pdists)+2))
 
     # Display the distributions themselves, if they're short enough.
-    if len(`str(fdist1)`) < 70:
-        print '  fdist1:', str(fdist1)
-        print '  fdist2:', str(fdist2)
-        print '  fdist3:', str(fdist3)
-    print
+    if len(repr(str(fdist1))) < 70:
+        print('  fdist1:', str(fdist1))
+        print('  fdist2:', str(fdist2))
+        print('  fdist3:', str(fdist3))
+    print()
 
-    print 'Generating:'
+    print('Generating:')
     for pdist in pdists:
         fdist = FreqDist(pdist.generate() for i in range(5000))
-        print '%20s %s' % (pdist.__class__.__name__[:20], str(fdist)[:55])
-    print
+        print('%20s %s' % (pdist.__class__.__name__[:20], str(fdist)[:55]))
+    print()
 
 def gt_demo():
     from nltk import corpus
@@ -2195,11 +2198,11 @@ def gt_demo():
     gt = GoodTuringProbDist(fd)
     sgt = SimpleGoodTuringProbDist(fd)
     katz = SimpleGoodTuringProbDist(fd, 7)
-    print '%18s %8s  %12s %14s  %12s' \
-        % ("word", "freqency", "GoodTuring", "SimpleGoodTuring", "Katz-cutoff" )
+    print('%18s %8s  %12s %14s  %12s' \
+        % ("word", "freqency", "GoodTuring", "SimpleGoodTuring", "Katz-cutoff" ))
     for key in fd:
-        print '%18s %8d  %12e   %14e   %12e' \
-            % (key, fd[key], gt.prob(key), sgt.prob(key), katz.prob(key))
+        print('%18s %8d  %12e   %14e   %12e' \
+            % (key, fd[key], gt.prob(key), sgt.prob(key), katz.prob(key)))
 
 if __name__ == '__main__':
     demo(6, 10)
