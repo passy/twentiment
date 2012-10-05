@@ -12,3 +12,16 @@ class NaiveBayesClassifierTestCase(unittest.TestCase):
         """Smokiest smoke test"""
 
         from twentiment.naivebayes import NaiveBayesClassifier
+
+    def test_train(self):
+        """Test training phase"""
+
+        from twentiment.naivebayes import NaiveBayesClassifier
+
+        training_features = [
+            ({'nice': True, 'pretty': True}, 'pos'),
+            ({'ugly': True, 'bald': True}, 'neg')
+        ]
+
+        classifier = NaiveBayesClassifier.train(training_features)
+        self.assertEqual(list(classifier._labels), ['neg', 'pos'])
