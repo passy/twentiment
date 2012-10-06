@@ -63,7 +63,7 @@ class NaiveBayesClassifier(object):
     def __init__(self, label_probdist, feature_probdist):
         self._label_probdist = label_probdist
         self._feature_probdist = feature_probdist
-        self._labels = label_probdist.samples()
+        self._labels = list(label_probdist.samples())
 
     @staticmethod
     def train(labeled_featuresets, estimator=ELEProbDist):
