@@ -1,4 +1,5 @@
 twentiment
 ==========
 
-Research project on sentiment analysis using the Naïve Bayes Classificator
+Research project on twitter sentiment analysis using the Naïve Bayes
+Classificator.
