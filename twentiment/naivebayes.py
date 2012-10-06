@@ -31,6 +31,7 @@ sum to one:
 :license: Apache 2.0
 """
 
+import logging
 from collections import defaultdict
 from twentiment.thirdparty.probability import (FreqDist, DictionaryProbDist,
                                                ELEProbDist, sum_logs)
@@ -56,6 +57,8 @@ class NaiveBayesClassifier(object):
     you generally should not use 'None' as a feature value for one of
     your own features.
     """
+
+    LOG = logging.getLogger('NaiveBayesClassifier')
 
     def __init__(self, label_probdist, feature_probdist):
         self._label_probdist = label_probdist
@@ -101,3 +104,50 @@ class NaiveBayesClassifier(object):
             feature_probdist[label, fname] = probdist
 
         return NaiveBayesClassifier(label_probdist, feature_probdist)
+
+    def prob_classify(self, featureset):
+        """Calculate the probabilities the given featureset classifications
+        and return a DictionaryProbDist instance.
+
+        Works in O(nm) with n = # of labels, m = # of featureset elements.
+        """
+
+        # Work on a copy of the feature set, because we mutate it.
+        fset = featureset.copy()
+        for fname in featureset:
+            for label in self._labels:
+                if (label, fname) in self._feature_probdist:
+                    break
+            else:
+                # Discard feature name we haven't been trained on from the
+                # input set.
+                del fset[fname]
+
+        # No we're working with a feature set that only includes known
+        # features.
+
+        # Instead of working with the product of the separate probabilities,
+        # we use the sum of the logarithms to prevent underflows and make the
+        # result more stable.
+
+        #: The probability of each label, given the features. Starting with
+        #: the probability of the label itself.
+        logprob = {}
+        for label in self._labels:
+            logprob[label] = self._label_probdist.logprob(label)
+
+        # Add the logarithmic probability of the features given the labels.
+        for label in self._labels:
+            for (fname, fval) in featureset.items():
+                feature_probs = self._feature_probdist.get((label, fname))
+
+                if feature_probs is not None:
+                    logprob[label] += feature_probs.logprob(fval)
+                else:
+                    # This should not occur if the classifier was created with
+                    # the train() method.
+                    self.LOG.warn("Couldn't find (%s, %s) in feature "
+                                  "probabilities set.", label, fname)
+                    logprob[label] += sum_logs([])  # = -INF.
+
+        return DictionaryProbDist(logprob, normalize=True, log=True)
