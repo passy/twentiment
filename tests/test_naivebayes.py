@@ -32,7 +32,7 @@ class NaiveBayesClassifierTestCase(unittest.TestCase):
         featureset = {'nice': True, 'pretty': True}
 
         result = classifier.prob_classify(featureset)
-        self.assertEquals(result.max(), 'pos')
+        self.assertEqual(result.max(), 'pos')
         self.assertTrue(result.logprob('pos') > result.logprob('neg'))
 
     def test_prob_classify_neg(self):
@@ -42,5 +42,5 @@ class NaiveBayesClassifierTestCase(unittest.TestCase):
         featureset = {'ugly': True, 'bald': True}
 
         result = classifier.prob_classify(featureset)
-        self.assertEquals(result.max(), 'neg')
+        self.assertEqual(result.max(), 'neg')
         self.assertTrue(result.logprob('neg') > result.logprob('pos'))

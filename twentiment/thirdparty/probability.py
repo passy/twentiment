@@ -47,7 +47,7 @@ from collections import defaultdict
 from functools import reduce
 import six
 
-_NINF = float('-1e300')
+_NINF = float('-inf')
 
 ##//////////////////////////////////////////////////////
 ##  Frequency Distributions

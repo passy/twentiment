@@ -146,8 +146,6 @@ class NaiveBayesClassifier(object):
                 else:
                     # This should not occur if the classifier was created with
                     # the train() method.
-                    self.LOG.warn("Couldn't find (%s, %s) in feature "
-                                  "probabilities set.", label, fname)
                     logprob[label] += sum_logs([])  # = -INF.
 
         return DictionaryProbDist(logprob, normalize=True, log=True)
