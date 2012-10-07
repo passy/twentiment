@@ -149,3 +149,8 @@ class NaiveBayesClassifier(object):
                     logprob[label] += sum_logs([])  # = -INF.
 
         return DictionaryProbDist(logprob, normalize=True, log=True)
+
+    def classify(self, featureset):
+        """Return the most likely label for a given featureset."""
+
+        return self.classify(featureset).max()
