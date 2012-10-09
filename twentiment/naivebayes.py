@@ -171,4 +171,4 @@ class NaiveBayesClassifier(object):
     def classify(self, featureset):
         """Return the most likely label for a given featureset."""
 
-        return self.classify(featureset).max()
+        return self.prob_classify(featureset).max()

@@ -12,7 +12,7 @@ def main():
             break
 
         socket.send_unicode(line)
-        print(socket.recv())
+        print(socket.recv_string())
 
 
 if __name__ == "__main__":
