@@ -61,3 +61,12 @@ class NaiveBayesTestCase2(TestCase):
         score = prob_result.prob('positive') - prob_result.prob('negative')
 
         self.assertTrue(score > 0, "Score is {}".format(score))
+
+    def test_balance(self):
+        """Balanced use of negative and positive words -> neutral"""
+
+        twfeat = extract_features(normalize_text("friend and enemy"))
+        prob_result = self.classifier.prob_classify(twfeat)
+        score = prob_result.prob('positive') - prob_result.prob('negative')
+
+        self.assertEqual(score, 0)
