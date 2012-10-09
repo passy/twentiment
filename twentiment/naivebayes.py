@@ -123,7 +123,7 @@ class NaiveBayesClassifier(object):
                 # input set.
                 del fset[fname]
 
-        # No we're working with a feature set that only includes known
+        # Now we're working with a feature set that only includes known
         # features.
 
         # Instead of working with the product of the separate probabilities,

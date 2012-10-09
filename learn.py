@@ -1,56 +1,61 @@
 #!/usr/bin/env python3
-"""
-Supervised learning phase for the twentiment analyzer.
 
-:author: 2012, Pascal Hartig <phartig@rdrei.net>
-:license: BSD
-"""
-
-from __future__ import division
-from nltk.classify.naivebayes import NaiveBayesClassifier
-from nltk.corpus import movie_reviews
-
-import nltk.classify.util
-
-
-def word_features(words):
-    """Turns a list of words into a feature dictionary.
-
-    The word is used as feature name, whereas the feature value is always
-    True.
-    """
-
-    return {word: True for word in words}
-
-
-def word_feature_lists(ids, sentiment):
-    return [(word_features(movie_reviews.words(fileids=[f])), sentiment)
-            for f in ids]
+from twentiment.thirdparty.probability import FreqDist
+from twentiment.naivebayes import NaiveBayesClassifier
+from twentiment.text import normalize_text
 
 
 def learn_main():
-    neg_ids = movie_reviews.fileids('neg')
-    pos_ids = movie_reviews.fileids('pos')
+    pos_tweets = [('I love this car', 'positive'),
+                  ('This view is amazing', 'positive'),
+                  ('I feel great this morning', 'positive'),
+                  ('I am so excited about the concert', 'positive'),
+                  ('He is my best friend', 'positive')]
 
-    neg_features = word_feature_lists(neg_ids, 'neg')
-    pos_features = word_feature_lists(pos_ids, 'pos')
+    neg_tweets = [('I do not like this car', 'negative'),
+                  ('This view is horrible', 'negative'),
+                  ('I feel tired this morning', 'negative'),
+                  ('I am not looking forward to the concert', 'negative'),
+                  ('He is my enemy', 'negative')]
 
-    # Using 3/4 of the features as training set, the rest as test set
-    neg_cutoff = int(len(neg_features) * (3 / 4))
-    pos_cutoff = int(len(pos_features) * (3 / 4))
+    tweets = []
+    for (words, sentiment) in pos_tweets + neg_tweets:
+        tweets.append((normalize_text(words), sentiment))
 
-    train_features = neg_features[:neg_cutoff] + pos_features[:pos_cutoff]
-    test_features = neg_features[neg_cutoff:] + pos_features[pos_cutoff:]
+    features = list(get_word_features(get_words(tweets)))
+    training_set = [(extract_features(doc, features), label) for (doc, label)
+                    in tweets]
 
-    print("Training on {} instances. Testing on {} instances.".format(
-        len(train_features), len(test_features)
-    ))
+    classifier = NaiveBayesClassifier.train(training_set)
 
-    classifier = NaiveBayesClassifier.train(train_features)
-    print("Accuracy: ", nltk.classify.util.accuracy(classifier,
-                                                    test_features))
-    classifier.show_most_informative_features()
-    import debug
+    while True:
+        line = input("twentiment > ")
+        if not line:
+            break
+
+        tweet = normalize_text(line)
+        twfeat = extract_features(tweet, features)
+
+        prob_result = classifier.prob_classify(twfeat)
+        score = prob_result.prob('positive') - prob_result.prob('negative')
+
+        print("Sentiment: {} ({}%)".format(prob_result.max(), score * 100))
+
+
+def get_words(tweets):
+    all_words = []
+    for (words, _) in tweets:
+        all_words.extend(words)
+
+    return all_words
+
+
+def get_word_features(wordlist):
+    return FreqDist(wordlist).keys()
+
+
+def extract_features(document, all_features):
+    return {word: (word in set(document)) for word in all_features}
 
 
 if __name__ == "__main__":
