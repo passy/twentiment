@@ -4,6 +4,8 @@ from twentiment.thirdparty.probability import FreqDist
 from twentiment.naivebayes import NaiveBayesClassifier
 from twentiment.text import normalize_text
 
+import zmq
+
 
 def learn_main():
     pos_tweets = [('I love this car', 'positive'),
@@ -27,18 +29,27 @@ def learn_main():
                     in tweets]
 
     classifier = NaiveBayesClassifier.train(training_set)
+    start_server(classifier)
+
+
+def start_server(classifier):
+    context = zmq.Context()
+    # Create a new reply server.
+    socket = context.socket(zmq.REP)
+
+    socket.bind("tcp://127.0.0.1:10001")
 
     while True:
-        line = input("twentiment > ")
-        if not line:
-            break
+        message = socket.recv()
+        response = handle_message(classifier, str(message, "utf-8"))
+        socket.send_unicode(response)
 
-        twfeat = extract_features(normalize_text(line))
 
-        prob_result = classifier.prob_classify(twfeat)
-        score = prob_result.prob('positive') - prob_result.prob('negative')
-
-        print("Sentiment: {} ({}%)".format(prob_result.max(), score * 100))
+def handle_message(classifier, message):
+    twfeat = extract_features(normalize_text(message))
+    prob_result = classifier.prob_classify(twfeat)
+    return "{}".format(prob_result.prob('positive') -
+                       prob_result.prob('negative'))
 
 
 def get_words(tweets):
