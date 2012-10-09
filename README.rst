@@ -24,6 +24,9 @@ sample is available `in the repository <https://github.com/passy/twentiment/blob
 After that, you can use ``twentiment_client`` to query the server using the
 syntax ``GUESS my tweet to be scored``.
 
+There's a significantly larger samples database available with
+`about two million tweets <http://ge.tt/1fThqCP/v/0>`_.
+
 Example
 -------
 
