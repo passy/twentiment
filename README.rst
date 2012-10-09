@@ -54,6 +54,8 @@ Wishlist
         * At the moment, most of the calculations are done at start-up time, so
           querying is rather cheap. Could be difficult to find a good balance.
 
+    * Persistence of the server state. Maybe through redis? Only important with
+      TRAIN functionality.
     * Add some sort of parallelism to the server, so querying doesn't block.
     * Add a way of importing live training data from twitter (like from
       analysing emoticons)
