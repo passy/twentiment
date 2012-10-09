@@ -23,7 +23,7 @@ def learn_main():
         tweets.append((normalize_text(words), sentiment))
 
     features = list(get_word_features(get_words(tweets)))
-    training_set = [(extract_features(doc, features), label) for (doc, label)
+    training_set = [(extract_features(doc), label) for (doc, label)
                     in tweets]
 
     classifier = NaiveBayesClassifier.train(training_set)
@@ -33,8 +33,7 @@ def learn_main():
         if not line:
             break
 
-        tweet = normalize_text(line)
-        twfeat = extract_features(tweet, features)
+        twfeat = extract_features(normalize_text(line))
 
         prob_result = classifier.prob_classify(twfeat)
         score = prob_result.prob('positive') - prob_result.prob('negative')
@@ -54,8 +53,8 @@ def get_word_features(wordlist):
     return FreqDist(wordlist).keys()
 
 
-def extract_features(document, all_features):
-    return {word: (word in set(document)) for word in all_features}
+def extract_features(document):
+    return {word: True for word in document}
 
 
 if __name__ == "__main__":

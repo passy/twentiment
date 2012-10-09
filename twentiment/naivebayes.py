@@ -75,10 +75,12 @@ class NaiveBayesClassifier(object):
         """
 
         label_freqdist = FreqDist()
-        # Features and values are stored in dictionaries defaulting to
-        # empty frequency distributions or sets, respectively.
+        #: Features and values are stored in dictionaries defaulting to
+        #: empty frequency distributions or sets, respectively.
         feature_freqdist = defaultdict(FreqDist)
         feature_values = defaultdict(set)
+        #: Set of all feature names used, across labels.
+        fnames = set()
 
         # Count how many times a particular feature value occured given the
         # label and feature name.
@@ -91,6 +93,22 @@ class NaiveBayesClassifier(object):
                 feature_freqdist[label, fname].inc(fval)
                 # Record that the fname can take the value fval.
                 feature_values[fname].add(fval)
+                # Keep a set of all used feature names.
+                fnames.add(fname)
+
+        for label in label_freqdist:
+            num_samples = label_freqdist[label]
+            for fname in fnames:
+                # The count of the feature given the label.
+                count = feature_freqdist[label, fname].N()
+                # Create a balance between the labels, such that for each
+                # 'missing' occasion of this feature in the current label,
+                # there is a 'None' element incremented. So in the end all
+                # freqdists have the same count, but with different fvalues.
+                feature_freqdist[label, fname].inc(None, num_samples - count)
+                # Make sure the values are aware of the None value.
+                if (num_samples - count > 0):
+                    feature_values[fname].add(None)
 
         #: The distribution P(label)
         label_probdist = estimator(label_freqdist)
@@ -138,7 +156,7 @@ class NaiveBayesClassifier(object):
 
         # Add the logarithmic probability of the features given the labels.
         for label in self._labels:
-            for (fname, fval) in featureset.items():
+            for (fname, fval) in fset.items():
                 feature_probs = self._feature_probdist.get((label, fname))
 
                 if feature_probs is not None:
