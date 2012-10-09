@@ -15,10 +15,10 @@ Usage
 -----
 
 First, start the twentiment server that loads the data from a JSON file. A
-sample is available `in the
-repository<https://github.com/passy/twentiment/blob/623f4064469850b40b50db4707f12a07047f022b/samples/few_tweets.json>`_.
+sample is available `in the repository <https://github.com/passy/twentiment/blob/623f4064469850b40b50db4707f12a07047f022b/samples/few_tweets.json>`_.
 
 ::
+
     twentiment_server samples/few_tweets.json
 
 After that, you can use ``twentiment_client`` to query the server using the
@@ -26,6 +26,8 @@ syntax ``GUESS my tweet to be scored``.
 
 Example
 -------
+
+::
 
     twentiment> GUESS hello world
     OK 0.0
