@@ -7,7 +7,7 @@ Supervised learning phase for the twentiment analyzer.
 """
 
 from __future__ import division
-from twentiment.naivebayes import NaiveBayesClassifier
+from nltk.classify.naivebayes import NaiveBayesClassifier
 from nltk.corpus import movie_reviews
 
 import nltk.classify.util
@@ -50,6 +50,7 @@ def learn_main():
     print("Accuracy: ", nltk.classify.util.accuracy(classifier,
                                                     test_features))
     classifier.show_most_informative_features()
+    import debug
 
 
 if __name__ == "__main__":
