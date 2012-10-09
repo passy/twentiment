@@ -20,7 +20,7 @@ setup(
     packages=['twentiment', 'twentiment.thirdparty'],
     package_data={'': ['LICENSE', 'README.rst']},
     include_package_data=True,
-    scripts=["bin/twentiment_server"],
+    scripts=["bin/twentiment_server", "bin/twentiment_client"],
     install_requires=[
         'pyzmq',
         'six==1.2.0'

@@ -55,6 +55,8 @@ Wishlist
           querying is rather cheap. Could be difficult to find a good balance.
 
     * Add some sort of parallelism to the server, so querying doesn't block.
+    * Add a way of importing live training data from twitter (like from
+      analysing emoticons)
 
 Motivation
 ----------

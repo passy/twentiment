@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""Twitter sentiment analysis client.
+
+"""
+import zmq
+import argparse
+
+
+def run_client(host, port):
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect('tcp://{}:{}'.format(host, port))
+
+    while True:
+        line = input("twentiment> ")
+        if not line:
+            break
+
+        socket.send_unicode(line)
+        print(socket.recv_string())
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Twitter sentiment "
+                                     "analysis client")
+    parser.add_argument('--host', type=str,
+                        help="Set host to bind to. [default: 127.0.0.1]",
+                        default="127.0.0.1")
+    parser.add_argument('--port', type=int,
+                        help="Set port to bind to. [default: 10001]",
+                        default=10001)
+
+    args = parser.parse_args()
+
+    run_client(args.host, args.port)
+
+
+if __name__ == "__main__":
+    main()
+#vim: ft:python
