@@ -1,6 +1,9 @@
 twentiment
 ==========
 
+.. image:: https://secure.travis-ci.org/passy/twentiment.png?branch=master
+    :target: https://secure.travis-ci.org/passy/twentiment
+
 Research project on twitter sentiment analysis using the Naïve Bayes
 Classificator.
 
