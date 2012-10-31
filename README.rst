@@ -54,7 +54,6 @@ Wishlist
 
 (Ranked by importance)
 
-    * Have a web-frontend that searches for tweets and rates their sentiment.
     * Give the server an option to fork the server process into the background
       and launch a shell like twentiment_client right away.
     * Restructure the Classifier to allow adaptive retraining, i.e. provide a
