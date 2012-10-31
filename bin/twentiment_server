@@ -13,6 +13,8 @@ Options:
     -h --help               Show help
     --host=<host>           Set host to bind to [default: 127.0.0.1]
     --port=<port>           Set port to bind to [default: 10001]
+    --entries=<count>       Only load <count> entries in total from DATA.
+                            [default: all]
 """
 
 
@@ -33,12 +35,16 @@ def main():
     parser.add_argument('input', type=str,
                         help="JSON file containing positive and negative "
                         "tweets.")
+    parser.add_argument('--entries', type=int,
+                        help="Only load <count> entries in total from DATA. "
+                        "[default: unlimited]",
+                        default=0)
 
     args = parser.parse_args()
     bind = "tcp://{}:{}".format(args.host, args.port)
 
     with open(args.input, 'r') as input_file:
-        classifier = Classifier.from_file(input_file)
+        classifier = Classifier.from_file(input_file, max_entries=args.entries)
 
     server = Server(classifier, bind=bind)
     server.run()
